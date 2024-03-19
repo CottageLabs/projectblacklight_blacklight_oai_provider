@@ -11,6 +11,11 @@ module BlacklightOaiProvider
       @set             = options[:set_model] || BlacklightOaiProvider::SolrSet
       @granularity = options[:granularity] || OAI::Const::Granularity::HIGH
 
+      if @set.respond_to?(:filters=)
+        @set.filters = Array.wrap(options[:set_filters])
+        @set.filters.concat(Array.wrap(options[:record_filters]))
+      end
+
       @set.controller = @controller
       @set.fields = options[:set_fields]
     end
@@ -81,6 +86,12 @@ module BlacklightOaiProvider
       end
 
       query.append_filter_query(@set.from_spec(constraints[:set])) if constraints[:set].present?
+
+      # Filter documents
+      Array(@options[:record_filters]).each do |f|
+        query.append_filter_query(f)
+      end
+
       query
     end
 

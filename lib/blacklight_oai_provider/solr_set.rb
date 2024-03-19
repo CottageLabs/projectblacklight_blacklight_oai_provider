@@ -9,10 +9,16 @@ module BlacklightOaiProvider
       def all
         return if @fields.nil?
 
-        params = { rows: 0, facet: true, 'facet.field' => solr_fields }
+        params = { rows: 0, facet: true, 'facet.field' => solr_fields, 'facet.sort' => 'count' }
         solr_fields.each { |field| params["f.#{field}.facet.limit"] = -1 } # override any potential blacklight limits
 
         builder = search_service.search_builder.merge(params)
+
+        # Filter set results
+        Array(@filters).each do |f|
+          builder.query.append_filter_query(f)
+        end
+
         response = search_service.repository.search(builder)
 
         sets_from_facets(response.facet_fields) if response.facet_fields
@@ -57,7 +63,7 @@ module BlacklightOaiProvider
         sets = Array.wrap(@fields).map do |f|
           facet_results.fetch(f[:solr_field], [])
                        .each_slice(2)
-                       .map { |t| new("#{f[:label]}:#{t.first}") }
+                       .map { |t| new("#{f[:label]}:\"#{t.first}\"") }
         end.flatten
 
         sets.empty? ? nil : sets
