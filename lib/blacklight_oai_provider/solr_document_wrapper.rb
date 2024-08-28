@@ -54,6 +54,17 @@ module BlacklightOaiProvider
       else
         # search_service.fetch(selector).first.documents.first
         query = search_service.search_builder.where(id: selector).query
+
+        # Filter documents
+        Array(@options[:record_filters]).each do |f|
+          query.append_filter_query(f)
+        end
+
+        # Add format filters
+        Array(@options[:format_filters]).each do |f|
+          query.append_filter_query(f)
+        end
+
         search_service.repository.search(query).documents.first
       end
     end
@@ -90,6 +101,11 @@ module BlacklightOaiProvider
 
       # Filter documents
       Array(@options[:record_filters]).each do |f|
+        query.append_filter_query(f)
+      end
+
+      # Add format filters
+      Array(@options[:format_filters]).each do |f|
         query.append_filter_query(f)
       end
 
