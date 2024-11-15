@@ -152,6 +152,7 @@ p.intro {
 
 <xsl:variable name="identifier" select="/oai:OAI-PMH/oai:request/@identifier" />
 <xsl:variable name="verb" select="/oai:OAI-PMH/oai:request/@verb" />
+<xsl:variable name="metadataPrefix" select="/oai:OAI-PMH/oai:request/@metadataPrefix" />
 
 <xsl:template match="/">
 <html>
@@ -492,6 +493,8 @@ p.intro {
     <td class="value">
       <xsl:value-of select="oai:identifier"/>
       <xsl:text> </xsl:text><a class="link" href="?verb=GetRecord&amp;metadataPrefix=oai_dc&amp;identifier={oai:identifier}">oai_dc</a>
+      <xsl:text> </xsl:text><a class="link" href="?verb=GetRecord&amp;metadataPrefix=mods&amp;identifier={oai:identifier}">MODs</a>
+      <xsl:text> </xsl:text><a class="link" href="?verb=GetRecord&amp;metadataPrefix=uketd_dc&amp;identifier={oai:identifier}">uketd_dc</a>
       <xsl:text> </xsl:text><a class="link" href="?verb=ListMetadataFormats&amp;identifier={oai:identifier}">formats</a>
     </td></tr>
     <tr><td class="key">Datestamp</td>
@@ -552,7 +555,7 @@ p.intro {
 <!-- unknown metadata format -->
 
 <xsl:template match="oai:metadata/*" priority='-100'>
-  <h3>Unknown Metadata Format</h3>
+  <h3>Metadata Format: <xsl:value-of select="$metadataPrefix" /></h3>
   <div class="xmlSource">
     <xsl:apply-templates select="." mode='xmlMarkup' />
   </div>

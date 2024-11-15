@@ -3,16 +3,22 @@ module BlacklightOaiProvider
     attr_reader :document_model, :timestamp_field, :solr_timestamp, :limit, :granularity
 
     def initialize(controller, options = {})
+      @options = options
       @controller      = controller
       @document_model  = @controller.blacklight_config.document_model
       @solr_timestamp  = document_model.timestamp_key
       @timestamp_field = 'timestamp' # method name used by ruby-oai
-      @limit           = options[:limit] || 15
-      @set             = options[:set_model] || BlacklightOaiProvider::SolrSet
-      @granularity = options[:granularity] || OAI::Const::Granularity::HIGH
+      @limit           = @options[:limit] || 15
+      @set             = @options[:set_model] || BlacklightOaiProvider::SolrSet
+      @granularity = @options[:granularity] || OAI::Const::Granularity::HIGH
+
+      if @set.respond_to?(:filters=)
+        @set.filters = Array.wrap(@options[:set_filters])
+        @set.filters.concat(Array.wrap(@options[:record_filters]))
+      end
 
       @set.controller = @controller
-      @set.fields = options[:set_fields]
+      @set.fields = @options[:set_fields]
     end
 
     def sets
@@ -48,6 +54,17 @@ module BlacklightOaiProvider
       else
         # search_service.fetch(selector).first.documents.first
         query = search_service.search_builder.where(id: selector).query
+
+        # Filter documents
+        Array(@options[:record_filters]).each do |f|
+          query.append_filter_query(f)
+        end
+
+        # Add format filters
+        Array(@options[:format_filters]).each do |f|
+          query.append_filter_query(f)
+        end
+
         search_service.repository.search(query).documents.first
       end
     end
@@ -81,6 +98,17 @@ module BlacklightOaiProvider
       end
 
       query.append_filter_query(@set.from_spec(constraints[:set])) if constraints[:set].present?
+
+      # Filter documents
+      Array(@options[:record_filters]).each do |f|
+        query.append_filter_query(f)
+      end
+
+      # Add format filters
+      Array(@options[:format_filters]).each do |f|
+        query.append_filter_query(f)
+      end
+
       query
     end
 

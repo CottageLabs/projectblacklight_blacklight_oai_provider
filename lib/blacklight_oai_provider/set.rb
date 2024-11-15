@@ -8,6 +8,9 @@ module BlacklightOaiProvider
       # Fields must be indexed
       attr_accessor :fields
 
+      # The solr filter queries to exclude certain set values (optional)
+      attr_accessor :filters
+
       # Return an array of all SetSpecs, or nil if sets are not supported.
       # Objects returned must be of a class that inherits from
       # BlacklightOaiProvider::SetSpecs.
