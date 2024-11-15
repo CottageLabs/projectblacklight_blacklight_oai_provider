@@ -67,5 +67,17 @@ module BlacklightOaiProvider
         raise(OAI::FormatException.new, "metadataPrefix not supported")
       end
     end
+
+    def parse_date(value)
+      return value if value.respond_to?(:strftime)
+
+      if value[-1] == "Z"
+        Time.strptime(value, "%Y-%m-%dT%H:%M:%S%Z").utc
+      else
+        Date.strptime(value, "%Y-%m-%d")
+      end
+    rescue ArgumentError => err
+      raise(OAI::ArgumentException.new, "unparsable date: '#{value}'")
+    end
   end
 end
